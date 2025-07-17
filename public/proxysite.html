@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Proxy Site</title>
+</head>
+<body>
+  <h2>Enter a URL:</h2>
+  <form onsubmit="proxyUrl(event)">
+    <input type="text" id="url" placeholder="https://example.com" size="50" />
+    <button type="submit">Go</button>
+  </form>
+  <br>
+  <iframe id="resultFrame" width="100%" height="600px"></iframe>
+
+  <script>
+    function proxyUrl(event) {
+      event.preventDefault();
+      const url = document.getElementById('url').value;
+      document.getElementById('resultFrame').src = `/proxy?url=${encodeURIComponent(url)}`;
+    }
+  </script>
+</body>
+</html>

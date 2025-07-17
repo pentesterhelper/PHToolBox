@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Server Header Analysis</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #ffffff; 
+      color: #000000; 
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+    }
+    .header { 
+      text-align: center; 
+      margin-bottom: 40px; 
+      border-bottom: 1px solid #e1e5e9; 
+      padding-bottom: 24px; 
+    }
+    .header h1 { 
+      font-size: 2.5rem; 
+      color: #000000; 
+      margin-bottom: 8px; 
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+    .header p {
+      color: #6b7280;
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+    .input-section {
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      gap: 16px;
+      margin-bottom: 48px; 
+      flex-wrap: wrap;
+    }
+    .input-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+    }
+    input[type="text"] {
+      padding: 14px 18px; 
+      font-size: 16px; 
+      border: 2px solid #e1e5e9;
+      border-radius: 8px; 
+      background: #ffffff; 
+      color: #000000; 
+      width: 420px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    input[type="text"]:focus { 
+      outline: none; 
+      border-color: #2563eb; 
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    input[type="text"]::placeholder {
+      color: #9ca3af;
+    }
+    button {
+      padding: 14px 28px; 
+      font-size: 16px; 
+      background: #000000; 
+      color: #ffffff;
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      font-weight: 500;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button:hover { 
+      background: #1f2937; 
+      transform: translateY(-1px);
+    }
+    button:disabled { 
+      background: #9ca3af; 
+      cursor: not-allowed; 
+      transform: none;
+    }
+    .result { margin-top: 48px; }
+    
+    /* Spinner Styles */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading { 
+      text-align: center; 
+      padding: 60px 20px; 
+      color: #6b7280; 
+      font-size: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e1e5e9;
+      border-top: 3px solid #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    .error {
+      background: #fef2f2; 
+      color: #dc2626; 
+      padding: 16px 20px;
+      border-radius: 8px; 
+      border-left: 4px solid #ef4444; 
+      margin-bottom: 24px;
+      border: 1px solid #fecaca;
+    }
+    .card {
+      background: #ffffff; 
+      border: 1px solid #e1e5e9; 
+      border-radius: 12px;
+      margin-bottom: 24px; 
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+    .card-header { 
+      background: #f8fafc; 
+      padding: 20px 24px; 
+      border-bottom: 1px solid #e1e5e9; 
+    }
+    .card-header h3 { 
+      color: #000000; 
+      font-size: 1.3rem; 
+      margin: 0; 
+      font-weight: 600;
+    }
+    .card-body { 
+      display: flex; 
+      gap: 24px; 
+      padding: 24px; 
+      flex-wrap: wrap; 
+    }
+    .section {
+      background: #ffffff; 
+      border: 1px solid #f1f5f9; 
+      border-radius: 8px;
+      padding: 20px; 
+      flex: 1 1 300px;
+    }
+    .section h4 {
+      color: #000000; 
+      margin-bottom: 16px; 
+      font-size: 1.1rem;
+      border-bottom: 1px solid #e1e5e9; 
+      padding-bottom: 8px;
+      font-weight: 600;
+    }
+    .field-value {
+      background: #f8fafc; 
+      border: 1px solid #e1e5e9; 
+      border-radius: 6px;
+      padding: 16px; 
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; 
+      font-size: 14px;
+      color: #000000; 
+      white-space: pre-wrap; 
+      word-break: break-word;
+      overflow-y: auto; 
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .key-value-pair { 
+      margin-bottom: 8px; 
+      padding: 4px 0;
+    }
+    .key-value-pair .key { 
+      font-weight: 600; 
+      color: #2563eb; 
+    }
+    .key-value-pair .value { 
+      color: #000000; 
+      font-weight: normal; 
+    }
+    .status-success { color: #059669; font-weight: 600; }
+    .status-error { color: #dc2626; font-weight: 600; }
+    .status-warning { color: #d97706; font-weight: 600; }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container { padding: 24px 16px; }
+      .header h1 { font-size: 2rem; }
+      .input-section { flex-direction: column; }
+      .input-group { width: 100%; }
+      input[type="text"] { width: 100%; }
+      .card-body { flex-direction: column; }
+    }
+    
+    /* Additional Professional Touches */
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+    
+    .badge-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .badge-error {
+      background: #fef2f2;
+      color: #991b1b;
+    }
+    
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Server Header Analysis</h1>
+      <p>Professional server header detection and analysis tool</p>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input id="urlInput" type="text" placeholder="Enter URL (e.g. https://example.com)" />
+        <button id="runButton" onclick="runTest()">
+          <span id="buttonText">Run Analysis</span>
+          <div id="buttonSpinner" class="spinner" style="display: none;"></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+async function runTest() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return showError('Please enter a URL');
+  
+  setButtonLoading(true);
+  showLoading();
+
+  try {
+    const response = await fetch(`http://localhost:9999/api/getServerHeader?url=${encodeURIComponent(url)}`);
+    const data = await response.json();
+
+    if (!Array.isArray(data.results?.rawResults)) {
+      if (data.error) return showError(`Server error: ${data.error}`);
+      return showError('Unexpected response from server');
+    }
+
+    renderConsolidated(data.results.uniqueServerHeaders);
+    renderResults(data.results.rawResults);
+  } catch (err) {
+    showError(`Connection error: ${err.message}`);
+  } finally {
+    setButtonLoading(false);
+  }
+}
+
+function setButtonLoading(isLoading) {
+  const button = document.getElementById('runButton');
+  const buttonText = document.getElementById('buttonText');
+  const buttonSpinner = document.getElementById('buttonSpinner');
+  
+  if (isLoading) {
+    button.disabled = true;
+    buttonText.textContent = 'Analyzing...';
+    buttonSpinner.style.display = 'block';
+  } else {
+    button.disabled = false;
+    buttonText.textContent = 'Run Analysis';
+    buttonSpinner.style.display = 'none';
+  }
+}
+
+function showLoading() {
+  document.getElementById('result').innerHTML = `
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <div>Analyzing server headers...</div>
+    </div>
+  `;
+}
+
+function showError(message) {
+  document.getElementById('result').innerHTML = `
+    <div class="error">
+      <strong>Error:</strong> ${escapeHtml(message)}
+    </div>
+  `;
+}
+
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') return unsafe;
+  return unsafe.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#039;');
+}
+
+function formatKeyValue(obj) {
+  if (!obj || typeof obj !== 'object') return '<div class="key-value-pair"><span class="value">None</span></div>';
+  return Object.entries(obj)
+    .map(([key, value]) => `
+      <div class="key-value-pair">
+        <span class="key">${escapeHtml(key)}:</span> 
+        <span class="value">${Array.isArray(value) ? value.map(v => escapeHtml(v)).join(', ') : escapeHtml(value)}</span>
+      </div>
+    `)
+    .join('');
+}
+
+function getStatusClass(status) {
+  if (status >= 200 && status < 300) return 'status-success';
+  if (status >= 400) return 'status-error';
+  return 'status-warning';
+}
+
+function getStatusBadge(status) {
+  if (status >= 200 && status < 300) return 'badge-success';
+  if (status >= 400) return 'badge-error';
+  return 'badge-warning';
+}
+
+function renderConsolidated(headers) {
+  const html = `
+    <div class="card">
+      <div class="card-header">
+        <h3>🔍 Consolidated Server Headers</h3>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <h4>Unique Server Information</h4>
+          ${formatKeyValue(headers)}
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('result').innerHTML = html;
+}
+
+function renderResults(results) {
+  let html = document.getElementById('result').innerHTML;
+
+  results.forEach(item => {
+    const statusClass = item.error ? 'status-error' : getStatusClass(item.status);
+    const statusBadge = item.error ? 'badge-error' : getStatusBadge(item.status);
+    
+    html += `
+      <div class="card">
+        <div class="card-header">
+          <h3>${escapeHtml(item.method)} ${escapeHtml(item.spoofedHost)} → ${escapeHtml(item.path)}</h3>
+        </div>
+        <div class="card-body">
+          <div class="section">
+            <h4>Request Details</h4>
+            <div class="field-value">URL: ${escapeHtml(item.url)}</div>
+            <div class="field-value">Spoofed Host: <strong>${escapeHtml(item.spoofedHost)}</strong></div>
+          </div>
+
+          <div class="section">
+            <h4>Response Information</h4>
+            ${item.error ? `
+              <div class="error"><strong>Error:</strong> ${escapeHtml(item.error)}</div>
+            ` : `
+              <div>
+                <span class="badge ${statusBadge}">Status: ${item.status}</span>
+              </div>
+            <div class="field-value"><strong>All Headers:</strong><br><br>${
+  (item.allHeaders || '')
+    .split('\n')
+    .map(line => {
+      const [key, ...valParts] = line.split(':');
+      const value = valParts.join(':').trim();
+      if (!key || !value) return '';
+      return `<div><span style="color:#2563eb;font-weight:600;">${escapeHtml(key)}:</span> <span style="color:#000;">${escapeHtml(value)}</span></div>`;
+    })
+    .join('')
+  || '<span style="color:#6b7280;">None</span>'
+}</div>
+
+            `}
+          </div>
+
+          <div class="section">
+            <h4>Server Fingerprint</h4>
+            ${formatKeyValue(item.serverHeaders)}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('result').innerHTML = html;
+}
+
+document.getElementById('urlInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') runTest();
+});
+</script>
+</body>
+</html>

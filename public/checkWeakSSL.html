@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSL Security Analyzer</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .container { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 40px 20px; 
+    }
+    
+    .header { 
+      text-align: center; 
+      margin-bottom: 50px; 
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .header h1 { 
+      font-size: 2.5rem; 
+      color: #1a1a1a; 
+      margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    
+    .header p { 
+      color: #666666; 
+      font-size: 1.1rem; 
+      font-weight: 400;
+    }
+    
+    .input-section {
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      gap: 16px;
+      margin-bottom: 50px; 
+      flex-wrap: wrap;
+    }
+    
+    .input-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      background: #fafafa;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    input[type="text"] {
+      padding: 14px 18px; 
+      font-size: 16px; 
+      border: 1px solid #d0d0d0;
+      border-radius: 8px; 
+      background: #ffffff; 
+      color: #1a1a1a; 
+      width: 420px;
+      transition: all 0.2s ease;
+      font-weight: 400;
+    }
+    
+    input[type="text"]:focus { 
+      outline: none; 
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    button {
+      padding: 14px 28px; 
+      font-size: 16px; 
+      background: #1a1a1a; 
+      color: #ffffff;
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    button:hover { 
+      background: #333333; 
+      transform: translateY(-1px);
+    }
+    
+    button:disabled { 
+      background: #cccccc; 
+      cursor: not-allowed; 
+      transform: none;
+    }
+    
+    .result { 
+      margin-top: 40px; 
+    }
+    
+    .loading { 
+      text-align: center; 
+      padding: 60px 20px; 
+      color: #666666; 
+      font-size: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a1a1a;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error {
+      background: #fef2f2; 
+      color: #dc2626; 
+      padding: 20px;
+      border-radius: 12px; 
+      border: 1px solid #fecaca; 
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    
+    .card {
+      background: #ffffff; 
+      border: 1px solid #e0e0e0; 
+      border-radius: 12px;
+      margin-bottom: 24px; 
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header { 
+      background: #f8f9fa; 
+      padding: 20px 24px; 
+      border-bottom: 1px solid #e0e0e0; 
+    }
+    
+    .card-header h3 { 
+      color: #1a1a1a; 
+      font-size: 1.25rem; 
+      margin: 0; 
+      font-weight: 600;
+    }
+    
+    .card-body { 
+      padding: 24px; 
+    }
+    
+    .section {
+      background: #ffffff; 
+      border: 1px solid #f0f0f0; 
+      border-radius: 8px;
+      padding: 20px; 
+      margin-bottom: 20px;
+    }
+    
+    .section h4 {
+      color: #1a1a1a; 
+      margin-bottom: 16px; 
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .field-label {
+      font-weight: 600; 
+      color: #1a1a1a; 
+      margin-bottom: 8px; 
+      display: block;
+    }
+    
+    .field-value {
+      background: #f8f9fa; 
+      border: 1px solid #e0e0e0; 
+      border-radius: 6px;
+      padding: 16px; 
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; 
+      font-size: 14px;
+      color: #1a1a1a; 
+      white-space: pre-wrap; 
+      word-break: break-word;
+      overflow-y: auto; 
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    
+    .key-value-pair { 
+      margin-bottom: 6px; 
+      padding: 4px 0;
+    }
+    
+    .key-value-pair .key { 
+      font-weight: 600; 
+      color: #2563eb; 
+    }
+    
+    .key-value-pair .value { 
+      color: #1a1a1a; 
+      font-weight: 400; 
+    }
+    
+    .status-success { 
+      color: #16a34a; 
+      font-weight: 600; 
+    }
+    
+    .status-error { 
+      color: #dc2626; 
+      font-weight: 600; 
+    }
+    
+    .status-warning { 
+      color: #ea580c; 
+      font-weight: 600; 
+    }
+    
+    .analysis-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .analysis-section h3 {
+      color: #1a1a1a;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .markdown {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      line-height: 1.7;
+    }
+    
+    .markdown h1, .markdown h2, .markdown h3 {
+      color: #1a1a1a;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      font-weight: 600;
+    }
+    
+    .markdown h1 { font-size: 1.5rem; }
+    .markdown h2 { font-size: 1.3rem; }
+    .markdown h3 { font-size: 1.1rem; }
+    
+    .markdown pre {
+      background: #1a1a1a;
+      color: #ffffff;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    
+    .markdown code {
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      background: #f1f3f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    
+    .markdown pre code {
+      background: none;
+      padding: 0;
+    }
+    
+    .markdown ul, .markdown ol {
+      padding-left: 1.5em;
+      margin: 16px 0;
+    }
+    
+    .markdown p {
+      margin-bottom: 16px;
+    }
+    
+    .markdown blockquote {
+      border-left: 4px solid #e0e0e0;
+      margin: 16px 0;
+      padding-left: 16px;
+      color: #666666;
+    }
+    
+    @media (max-width: 768px) {
+      .input-section { 
+        flex-direction: column; 
+      }
+      
+      .input-group {
+        width: 100%;
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      input[type="text"] { 
+        width: 100%; 
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .container {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SSL Security Analyzer</h1>
+      <p>Comprehensive SSL/TLS security testing and analysis tool</p>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input id="urlInput" type="text" placeholder="Enter URL (e.g. https://example.com)" />
+        <button id="testButton" onclick="runTest()">
+          <span id="buttonText">Analyze SSL</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div id="geminiAnalysis" class="analysis-section" style="display:none;"></div>
+  </div>
+
+<script>
+let isAnalyzing = false;
+
+async function runTest() {
+  const url = document.getElementById('urlInput').value;
+  if (!url) return showError('Please enter a URL');
+  
+  if (isAnalyzing) return;
+  
+  setAnalyzingState(true);
+  showLoading();
+  
+  try {
+    const response = await fetch('http://localhost:9999/API/checkWeakSSL', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      if (data.error) return showError(`Server error: ${data.error}`);
+      return showError('Unexpected response from server');
+    }
+
+    renderResults(data);
+
+    // Show AI analysis loading state
+    showAIAnalysisLoading();
+
+    // Prepare prompt for Gemini analysis
+    const promptText = `${JSON.stringify(data, null, 2)}`;
+
+    // Send to Gemini for analysis
+    const geminiRes = await fetch('http://localhost:9999/gemini-AI-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: promptText, typemode: 'ssl_analysis' })
+    });
+
+    const geminiData = await geminiRes.json();
+    if (geminiData.response) {
+      renderGeminiAnalysis(geminiData.response);
+    } else {
+      showAIAnalysisError('AI analysis failed');
+    }
+
+  } catch (err) {
+    showError(`Connection error: ${err.message}`);
+  } finally {
+    setAnalyzingState(false);
+  }
+}
+
+function setAnalyzingState(analyzing) {
+  isAnalyzing = analyzing;
+  const button = document.getElementById('testButton');
+  const buttonText = document.getElementById('buttonText');
+  
+  if (analyzing) {
+    button.disabled = true;
+    buttonText.textContent = 'Analyzing...';
+  } else {
+    button.disabled = false;
+    buttonText.textContent = 'Analyze SSL';
+  }
+}
+
+function showAIAnalysisLoading() {
+  const analysisDiv = document.getElementById('geminiAnalysis');
+  analysisDiv.innerHTML = `
+    <h3>🤖 AI Security Analysis</h3>
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>Analyzing SSL results with AI...</div>
+    </div>
+  `;
+  analysisDiv.style.display = 'block';
+}
+
+function showAIAnalysisError(message) {
+  const analysisDiv = document.getElementById('geminiAnalysis');
+  analysisDiv.innerHTML = `
+    <h3>🤖 AI Security Analysis</h3>
+    <div class="error">
+      <strong>Error:</strong> ${escapeHtml(message)}
+    </div>
+  `;
+  analysisDiv.style.display = 'block';
+}
+
+function renderGeminiAnalysis(text) {
+  const analysisDiv = document.getElementById('geminiAnalysis');
+  analysisDiv.innerHTML = `
+    <h3>🤖 AI Security Analysis</h3>
+    <div class="markdown">${marked.parse(text)}</div>
+  `;
+  analysisDiv.style.display = 'block';
+}
+
+function showLoading() {
+  document.getElementById('result').innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>Analyzing SSL/TLS security configuration...</div>
+    </div>
+  `;
+}
+
+function showError(message) {
+  document.getElementById('result').innerHTML = `
+    <div class="error">
+      <strong>Error:</strong> ${escapeHtml(message)}
+    </div>
+  `;
+}
+
+function formatKeyValue(obj) {
+  if (!obj || typeof obj !== 'object') return 'None';
+  return Object.entries(obj)
+    .map(([key, value]) => `
+      <div class="key-value-pair">
+        <span class="key">${escapeHtml(key)}:</span> 
+        <span class="value">${escapeHtml(value)}</span>
+      </div>
+    `)
+    .join('');
+}
+
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') return unsafe;
+  return unsafe.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#039;');
+}
+
+function getStatusClass(status) {
+  if (status >= 200 && status < 300) return 'status-success';
+  if (status >= 400) return 'status-error';
+  return 'status-warning';
+}
+
+function renderResults(results) {
+  if (!results || results.length === 0) return showError('No results received from the test.');
+  
+  let html = '';
+  results.forEach(item => {
+    const statusClass = item.error ? 'status-error' : getStatusClass(item.response?.status);
+    html += `
+      <div class="card">
+        <div class="card-header">
+          <h3>${item.method} Method Test</h3>
+        </div>
+        <div class="card-body">
+          <div class="section">
+            <h4>Response Details</h4>
+            ${item.error ? `
+              <div class="error"><strong>Error:</strong> ${escapeHtml(item.error)}</div>
+            ` : `
+              <div class="field-value">Testing URL: ${escapeHtml(item.url)}</div>
+              <div class="field-value">${typeof item.response.body === 'object' ? escapeHtml(JSON.stringify(item.response.body, null, 2)) : escapeHtml(item.response.body)}</div>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  document.getElementById('result').innerHTML = html;
+}
+
+document.getElementById('urlInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter' && !isAnalyzing) runTest();
+});
+</script>
+
+</body>
+</html>

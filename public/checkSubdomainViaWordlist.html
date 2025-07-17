@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subdomain Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
+      color: #000000;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      color: #000000;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: #555555;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .input-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input[type="text"], select {
+      padding: 14px 18px;
+      font-size: 16px;
+      border: 2px solid #d0d0d0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #000000;
+      transition: all 0.3s ease;
+      width: 300px;
+      font-weight: 400;
+    }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 16px;
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    button:hover {
+      background: #333333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .drop-zone {
+      border: 2px dashed #d0d0d0;
+      padding: 40px;
+      text-align: center;
+      border-radius: 12px;
+      background: #f8f9fa;
+      font-size: 16px;
+      width: 100%;
+      transition: all 0.3s ease;
+      color: #555555;
+      font-weight: 500;
+    }
+    .drop-zone:hover {
+      border-color: #2563eb;
+      background: #f0f7ff;
+    }
+    .drop-zone.dragover {
+      border-color: #000000;
+      background: #f0f7ff;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      background: #f8f9fa;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h3 {
+      color: #000000;
+      font-size: 1.3rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .scanning-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666666;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .status-2 td {
+      background-color: #f0f9ff;
+      border-left: 4px solid #10b981;
+    }
+    .status-3 td {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+    }
+    .status-4 td {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+    }
+    .status-5 td {
+      background-color: #faf5ff;
+      border-left: 4px solid #8b5cf6;
+    }
+
+    .stats-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-item {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666666;
+      font-weight: 500;
+    }
+
+    .filter-section {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 20px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-weight: 600;
+      color: #000000;
+      margin-right: 10px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #f3f4f6;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .filter-btn:hover {
+      background: #e5e7eb;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .filter-btn.active {
+      background: #000000;
+      color: #ffffff;
+      border-color: #000000;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #666666;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .button-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ffffff40;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 1024px) {
+      input[type="text"], select {
+        width: 100%;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .input-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-buttons {
+        justify-content: center;
+      }
+      .header h1 {
+        font-size: 2rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Custom scrollbar */
+    .table-container {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Subdomain Scanner</h1>
+      <p>Scan subdomains in real-time with filtering, resume, and Excel export</p>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input id="domainInput" type="text" placeholder="Enter Root Domain (e.g. example.com)" />
+        <input id="subWordlistInput" type="text" placeholder="Or type custom path" />
+        <select id="subWordlistSelect">
+          <option value="">Select wordlist</option>
+        </select>
+        <button id="runBtn" onclick="runSubScan()">Run Scan</button>
+      </div>
+    </div>
+
+    <div class="input-section">
+      <div id="dropZone" class="drop-zone">📂 Drag & Drop Subdomain Wordlist Here</div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="total">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="done">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="remain">0</div>
+          <div class="stat-label">Remaining</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="eta">--</div>
+          <div class="stat-label">ETA</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-buttons">
+        <span class="filter-label">Filter Results:</span>
+        <button class="filter-btn active" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" onclick="setFilter('1')">1xx</button>
+        <button class="filter-btn" onclick="setFilter('2')">2xx</button>
+        <button class="filter-btn" onclick="setFilter('3')">3xx</button>
+        <button class="filter-btn" onclick="setFilter('4')">4xx</button>
+        <button class="filter-btn" onclick="setFilter('5')">5xx</button>
+        <button onclick="exportToExcel()">Export to Excel</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Subdomain Results</h3>
+        <div class="scanning-status" id="scanningStatus" style="display: none;">
+          <div class="spinner"></div>
+          <span>Scanning...</span>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr><th>Subdomain</th><th>Status</th></tr>
+          </thead>
+          <tbody id="resultTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script>
+    let es, subResults = [], index = 0, total = 0, currentDomain = '', currentList = '', isPaused = false, startTime = 0;
+    let activeFilter = 'all';
+
+    function setButtonStates({ run = false, stop = false, resume = false }) {
+      const runBtn = document.getElementById('runBtn');
+      const scanningStatus = document.getElementById('scanningStatus');
+      
+      runBtn.disabled = !run;
+      if (!run) {
+        runBtn.innerHTML = '<div class="button-spinner"></div>Scanning...';
+        scanningStatus.style.display = 'flex';
+      } else {
+        runBtn.innerHTML = 'Run Scan';
+        scanningStatus.style.display = 'none';
+      }
+    }
+
+    function setFilter(prefix) {
+      activeFilter = prefix;
+      
+      // Update filter button states
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      const rows = document.querySelectorAll('#resultTable tr');
+      rows.forEach(row => {
+        const status = row.children[1]?.textContent || '';
+        row.style.display = (prefix === 'all' || status.startsWith(prefix)) ? '' : 'none';
+      });
+    }
+
+    async function runSubScan(startIndex = 0) {
+      currentDomain = document.getElementById('domainInput').value.trim();
+      let wordlist = document.getElementById('subWordlistInput').value.trim();
+      if (!wordlist) wordlist = document.getElementById('subWordlistSelect').value;
+      if (!currentDomain || !wordlist) return alert('Please enter domain and wordlist');
+
+      if (startIndex === 0) {
+        document.getElementById('resultTable').innerHTML = '';
+        subResults = [];
+        index = 0;
+        const res = await fetch(`http://localhost:9999/api/wordlist-count?path=${encodeURIComponent(wordlist)}`);
+        total = await res.json();
+        document.getElementById('total').textContent = total;
+        startTime = Date.now();
+      }
+
+      setButtonStates({ run: false, stop: true, resume: false });
+      currentList = wordlist;
+
+      const url = `http://localhost:9999/api/subdomain-discovery-stream?domain=${currentDomain}&wordlistPath=${encodeURIComponent(wordlist)}&startIndex=${startIndex}`;
+      es = new EventSource(url);
+
+      es.onmessage = e => {
+        const data = JSON.parse(e.data);
+        index = data.index || (index + 1);
+        document.getElementById('done').textContent = index;
+        document.getElementById('remain').textContent = total - index;
+
+        const elapsed = (Date.now() - startTime) / 1000;
+        const rate = index / elapsed;
+        const eta = rate ? Math.round((total - index) / rate) : '--';
+        document.getElementById('eta').textContent = eta !== '--' ? `${eta}s` : '--';
+
+        if (data.status !== '000') {
+          subResults.push(data);
+          appendSubResult(data);
+        }
+      };
+
+      es.addEventListener('done', () => {
+        es.close();
+        setButtonStates({ run: true, stop: false, resume: false });
+        document.getElementById('eta').textContent = '✅ Done';
+      });
+
+      es.onerror = () => {
+        es.close();
+        setButtonStates({ run: true, stop: false, resume: false });
+        alert('Connection error or server stopped.');
+      };
+    }
+
+    function stopSubScan() {
+      if (es) es.close();
+      isPaused = true;
+      setButtonStates({ run: false, stop: false, resume: true });
+    }
+
+    function resumeSubScan() {
+      if (isPaused) {
+        isPaused = false;
+        runSubScan(index);
+        setButtonStates({ run: false, stop: true, resume: false });
+      }
+    }
+
+    function appendSubResult(item) {
+      const tr = document.createElement('tr');
+      tr.className = `status-${item.status[0]}`;
+      tr.innerHTML = `<td>${item.url}</td><td><strong>${item.status}</strong></td>`;
+
+      if (activeFilter !== 'all' && !item.status.startsWith(activeFilter)) {
+        tr.style.display = 'none';
+      }
+
+      document.getElementById('resultTable').appendChild(tr);
+    }
+
+    function exportToExcel() {
+      if (subResults.length === 0) return alert("No data to export.");
+      const ws = XLSX.utils.json_to_sheet(subResults);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Subdomain Results');
+      XLSX.writeFile(wb, 'subdomain-results.xlsx');
+    }
+
+    // Load wordlists
+    fetch('http://localhost:9999/api/subdomain-wordlists')
+      .then(res => res.json())
+      .then(files => {
+        const sel = document.getElementById('subWordlistSelect');
+        files.forEach(file => {
+          const opt = document.createElement('option');
+          opt.value = file;
+          opt.textContent = file;
+          sel.appendChild(opt);
+        });
+      });
+
+    // Drag and drop functionality
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', async e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('subdomain_wordlists', file);
+
+      const res = await fetch('http://localhost:9999/api/subdomain-upload-wordlist', {
+        method: 'POST',
+        body: formData
+      });
+
+      const savedPath = await res.text();
+      const select = document.getElementById('subWordlistSelect');
+      const opt = document.createElement('option');
+      opt.value = savedPath;
+      opt.textContent = savedPath;
+      select.appendChild(opt);
+      select.value = savedPath;
+    });
+
+    setButtonStates({ run: true, stop: false, resume: false });
+  </script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wayback URL Finder</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff; 
+      color: #000000; 
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+    .header { 
+      text-align: center; 
+      margin-bottom: 40px; 
+      border-bottom: 2px solid #e0e0e0; 
+      padding-bottom: 30px; 
+    }
+    .header h1 { 
+      font-size: 2.5rem; 
+      color: #000000; 
+      margin-bottom: 10px; 
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header p { 
+      color: #555555; 
+      font-size: 1.1rem; 
+      font-weight: 400;
+    }
+
+    .input-section {
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      gap: 15px;
+      margin-bottom: 40px; 
+      flex-wrap: wrap;
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .input-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+      flex-wrap: wrap; 
+    }
+    input[type="text"] {
+      padding: 14px 18px; 
+      font-size: 16px; 
+      border: 2px solid #d0d0d0;
+      border-radius: 8px; 
+      background: #ffffff; 
+      color: #000000; 
+      width: 400px;
+      transition: all 0.3s ease;
+      font-weight: 400;
+    }
+    input[type="text"]:focus { 
+      outline: none; 
+      border-color: #2563eb; 
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    button {
+      padding: 14px 28px; 
+      font-size: 16px; 
+      background: #000000; 
+      color: #ffffff;
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.3s ease;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    button:hover { 
+      background: #333333; 
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    button:disabled { 
+      background: #cccccc; 
+      cursor: not-allowed; 
+      transform: none;
+      box-shadow: none;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff; 
+      border: 1px solid #e0e0e0; 
+      border-radius: 12px;
+      overflow: hidden; 
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      background: #f8f9fa;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .card-header h3 {
+      color: #000000;
+      font-size: 1.3rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .subdomain-count {
+      color: #666666;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+
+    ul.subdomain-list {
+      list-style: none;
+      padding: 20px 24px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    ul.subdomain-list li {
+      margin-bottom: 12px;
+      word-break: break-all;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    ul.subdomain-list li:last-child {
+      border-bottom: none;
+    }
+
+    ul.subdomain-list li a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    ul.subdomain-list li a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    .error {
+      background: #fef2f2;
+      color: #dc2626;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      border: 1px solid #fecaca;
+      font-weight: 500;
+    }
+
+    .loading {
+      margin-top: 20px;
+      font-weight: 600;
+      text-align: center;
+      color: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #000000;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Button spinner */
+    .button-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ffffff40;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 1024px) {
+      .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .input-section {
+        flex-direction: column;
+        padding: 20px;
+      }
+
+      input[type="text"] {
+        width: 100%;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+    }
+
+    /* Scrollbar styling */
+    ul.subdomain-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ul.subdomain-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    ul.subdomain-list::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    ul.subdomain-list::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Wayback URL Finder</h1>
+      <p>Discover archived URLs using the Wayback Machine API</p>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input type="text" id="waybackInput" placeholder="example.com" />
+        <button onclick="fetchWaybackURLs()" id="waybackBtn">Fetch URLs</button>
+        <button onclick="exportWaybackToExcel()">Export to Excel</button>
+        <button onclick="fullAccess()">Full Access</button>
+        <input type="text" id="waybackSearch" placeholder="Search results..." oninput="filterWaybackList()" />
+      </div>
+    </div>
+
+    <div id="waybackResult"></div>
+  </div>
+
+  <script>
+    async function fetchWaybackURLs() {
+      const domain = document.getElementById('waybackInput').value.trim();
+      const resultBox = document.getElementById('waybackResult');
+      const button = document.getElementById('waybackBtn');
+
+      if (!domain) return showWaybackError('Please enter a valid domain.');
+
+      resultBox.innerHTML = '<div class="loading"><div class="spinner"></div>Fetching URLs from Wayback Machine...</div>';
+      button.disabled = true;
+      button.innerHTML = '<div class="button-spinner"></div>Loading...';
+
+      try {
+        const res = await fetch(`http://localhost:9999/waybackurls?domain=${encodeURIComponent(domain)}`);
+        const urls = await res.json();
+
+        if (!Array.isArray(urls) || urls.length === 0) {
+          return showWaybackError('No results found.');
+        }
+
+        renderWaybackList(urls);
+      } catch (err) {
+        showWaybackError('Error: ' + err.message);
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'Fetch URLs';
+      }
+    }
+
+    function showWaybackError(msg) {
+      document.getElementById('waybackResult').innerHTML = `
+        <div class="error"><strong>Error:</strong> ${escapeHtml(msg)}</div>
+      `;
+    }
+
+    function renderWaybackList(urls) {
+      const html = `
+        <div class="card">
+          <div class="card-header">
+            <h3>Wayback Machine URLs <span class="subdomain-count">(${urls.length})</span></h3>
+          </div>
+          <ul class="subdomain-list" id="waybackList">
+            ${urls.map(url => `
+              <li>
+                <a href="WaybackUrlView.html/${encodeURIComponent(url)}" target="_blank">
+                  ${escapeHtml(url)}
+                </a>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+      document.getElementById('waybackResult').innerHTML = html;
+    }
+
+    function fullAccess() {
+      window.location.href = "WaybackUrlFullAccess";
+    }
+
+    function filterWaybackList() {
+      const filter = document.getElementById('waybackSearch').value.toLowerCase();
+      const items = document.querySelectorAll('#waybackList li');
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(filter) ? '' : 'none';
+      });
+    }
+
+    function exportWaybackToExcel() {
+      const items = document.querySelectorAll('#waybackList li a');
+      const data = Array.from(items).map(a => [a.textContent]);
+
+      if (data.length === 0) {
+        alert('No URLs to export!');
+        return;
+      }
+
+      const worksheet = XLSX.utils.aoa_to_sheet([["Wayback URLs"], ...data]);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "WaybackURLs");
+      XLSX.writeFile(workbook, "wayback_urls.xlsx");
+    }
+
+    function escapeHtml(unsafe) {
+      return unsafe.replace(/&/g, "&amp;")
+                   .replace(/</g, "&lt;")
+                   .replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;")
+                   .replace(/'/g, "&#039;");
+    }
+
+    document.getElementById('waybackInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        fetchWaybackURLs();
+      }
+    });
+  </script>
+</body>
+</html>

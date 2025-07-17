@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JS Deobfuscator</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #ffffff;
+      color: #000000;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 1px solid #e1e5e9;
+      padding-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      color: #000000;
+      margin-bottom: 8px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+
+    .header .note {
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      color: #0c4a6e;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 0.95rem;
+    }
+    
+    .input-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .input-label {
+      font-weight: 600;
+      color: #000000;
+      font-size: 1.1rem;
+    }
+
+    textarea {
+      min-height: 150px;
+      padding: 16px 20px;
+      font-size: 16px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #000000;
+      resize: vertical;
+      width: 100%;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      transition: all 0.2s ease;
+      line-height: 1.5;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 16px;
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background: #1f2937;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .result {
+      margin-top: 48px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e1e5e9;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: #f8fafc;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e1e5e9;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: #000000;
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+      font-size: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e1e5e9;
+      border-top: 3px solid #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border-left: 4px solid #ef4444;
+    }
+
+    .response-content {
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #000000;
+    }
+
+    .response-content h1, .response-content h2, .response-content h3 {
+      margin-top: 24px;
+      margin-bottom: 12px;
+      color: #000000;
+      font-weight: 600;
+    }
+
+    .response-content h1 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid #e1e5e9;
+      padding-bottom: 8px;
+    }
+
+    .response-content h2 {
+      font-size: 1.3rem;
+    }
+
+    .response-content h3 {
+      font-size: 1.1rem;
+    }
+
+    .response-content ul, .response-content ol {
+      padding-left: 24px;
+      margin: 12px 0;
+    }
+
+    .response-content li {
+      margin-bottom: 4px;
+    }
+
+    .response-content pre {
+      background: #f8fafc;
+      border: 1px solid #e1e5e9;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 16px 0;
+      font-size: 14px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    }
+
+    .response-content code {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .response-content pre code {
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .response-content p {
+      margin-bottom: 12px;
+    }
+
+    .response-content blockquote {
+      border-left: 4px solid #e1e5e9;
+      padding-left: 16px;
+      margin: 16px 0;
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    .response-content strong {
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .response-content em {
+      font-style: italic;
+    }
+
+    .response-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    .response-content th, .response-content td {
+      border: 1px solid #e1e5e9;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .response-content th {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 24px 16px; }
+      .header h1 { font-size: 2rem; }
+      textarea { min-height: 120px; }
+    }
+
+    /* Auto-resize textarea */
+    .auto-resize {
+      min-height: 150px;
+      max-height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔓 JS Deobfuscator</h1>
+      <p>Professional JavaScript deobfuscation and code analysis tool</p>
+      <div class="note">
+        <strong>Note:</strong> Add your Gemini API key in <code>keys.js</code> to enable this feature.
+      </div>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <label class="input-label">Enter your obfuscated JavaScript code:</label>
+        <textarea 
+          id="promptInput" 
+          class="auto-resize"
+          placeholder="Paste your obfuscated JavaScript code here...
+
+Example:
+var _0x1234=['hello','world'];
+function _0x5678(){return _0x1234[0]+' '+_0x1234[1];}
+console.log(_0x5678());"
+          spellcheck="false"
+        ></textarea>
+        <div class="button-container">
+          <button onclick="runPrompt()" id="generateBtn">
+            <span id="buttonText">🔍 Analyze & Decode</span>
+            <div id="buttonSpinner" class="spinner" style="display: none;"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    async function runPrompt() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      if (!prompt) return showError('Please enter JavaScript code to deobfuscate');
+
+      setButtonLoading(true);
+      showLoading();
+
+      try {
+        const response = await fetch('http://localhost:9999/gemini-AI-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, typemode: 'deobfusticate' })
+        });
+
+        const data = await response.json();
+        if (data.error) return showError(`Server error: ${data.error}`);
+
+        renderResult(data.response);
+      } catch (err) {
+        showError(`Connection error: ${err.message}`);
+      } finally {
+        setButtonLoading(false);
+      }
+    }
+
+    function setButtonLoading(isLoading) {
+      const button = document.getElementById('generateBtn');
+      const buttonText = document.getElementById('buttonText');
+      const buttonSpinner = document.getElementById('buttonSpinner');
+      
+      if (isLoading) {
+        button.disabled = true;
+        buttonText.textContent = '🔄 Analyzing...';
+        buttonSpinner.style.display = 'block';
+      } else {
+        button.disabled = false;
+        buttonText.textContent = '🔍 Analyze & Decode';
+        buttonSpinner.style.display = 'none';
+      }
+    }
+
+    function showLoading() {
+      document.getElementById('result').innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <div>Analyzing and deobfuscating JavaScript code...</div>
+        </div>
+      `;
+    }
+
+    function showError(message) {
+      document.getElementById('result').innerHTML = `
+        <div class="error"><strong>Error:</strong> ${escapeHtml(message)}</div>
+      `;
+    }
+
+    function renderResult(markdownText) {
+      const html = marked.parse(markdownText);
+      document.getElementById('result').innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <h3>🎯 Deobfuscation Result</h3>
+          </div>
+          <div class="card-body">
+            <div class="response-content">${html}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(unsafe) {
+      if (typeof unsafe !== 'string') return unsafe;
+      return unsafe.replace(/&/g, '&amp;')
+                   .replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;')
+                   .replace(/"/g, '&quot;')
+                   .replace(/'/g, '&#039;');
+    }
+
+    // Auto-resize textarea
+    document.getElementById('promptInput').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(400, Math.max(150, this.scrollHeight)) + 'px';
+    });
+
+    // Keyboard shortcuts
+    document.getElementById('promptInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        runPrompt();
+      }
+    });
+
+    // Initialize textarea height
+    document.addEventListener('DOMContentLoaded', function() {
+      const textarea = document.getElementById('promptInput');
+      textarea.style.height = '150px';
+    });
+  </script>
+</body>
+</html>

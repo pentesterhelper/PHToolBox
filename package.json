@@ -1,0 +1,28 @@
+{
+  "name": "static-web-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/genai": "^1.9.0",
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "got": "^14.4.7",
+    "http": "^0.0.1-security",
+    "http2-wrapper": "^2.2.1",
+    "https-proxy-agent": "^7.0.6",
+    "is-administrator": "^1.0.1",
+    "multer": "^2.0.1",
+    "openai": "^5.9.0",
+    "socks": "^2.8.6",
+    "socks-proxy-agent": "^8.0.5",
+    "telnet-client": "^2.2.5"
+  }
+}

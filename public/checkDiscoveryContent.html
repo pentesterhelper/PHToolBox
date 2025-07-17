@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Discovery Content</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
+      color: #000000;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      color: #000000;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: #555555;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .input-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input[type="text"], select {
+      padding: 14px 18px;
+      font-size: 16px;
+      border: 2px solid #d0d0d0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #000000;
+      transition: all 0.3s ease;
+      width: 300px;
+      font-weight: 400;
+    }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 16px;
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    button:hover {
+      background: #333333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .drop-zone {
+      border: 2px dashed #d0d0d0;
+      padding: 40px;
+      text-align: center;
+      border-radius: 12px;
+      background: #f8f9fa;
+      font-size: 16px;
+      width: 100%;
+      transition: all 0.3s ease;
+      color: #555555;
+      font-weight: 500;
+    }
+    .drop-zone:hover {
+      border-color: #2563eb;
+      background: #f0f7ff;
+    }
+    .drop-zone.dragover {
+      border-color: #000000;
+      background: #f0f7ff;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      background: #f8f9fa;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h3 {
+      color: #000000;
+      font-size: 1.3rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .scanning-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666666;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .status-2 td {
+      background-color: #f0f9ff;
+      border-left: 4px solid #10b981;
+    }
+    .status-3 td {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+    }
+    .status-4 td {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+    }
+    .status-5 td {
+      background-color: #faf5ff;
+      border-left: 4px solid #8b5cf6;
+    }
+
+    .stats-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-item {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666666;
+      font-weight: 500;
+    }
+
+    .filter-section {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 20px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-weight: 600;
+      color: #000000;
+      margin-right: 10px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #f3f4f6;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .filter-btn:hover {
+      background: #e5e7eb;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .filter-btn.active {
+      background: #000000;
+      color: #ffffff;
+      border-color: #000000;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #666666;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .button-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ffffff40;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 1024px) {
+      input[type="text"], select {
+        width: 100%;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .input-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-buttons {
+        justify-content: center;
+      }
+      .header h1 {
+        font-size: 2rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Custom scrollbar */
+    .table-container {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Discovery Content</h1>
+      <p>Scan paths from a wordlist with status filtering and export.</p>
+    </div>
+
+    <div class="input-section">
+      <input id="urlInput" type="text" placeholder="Enter Domain (e.g. https://example.com)" />
+      <input id="wordlistInput" type="text" placeholder="Or type custom path" />
+      <select id="wordlistSelect"><option value="">Select wordlist</option></select>
+      <button id="runTestBtn" onclick="runTest()">Run Test</button>
+      <button id="stopBtn" onclick="stopTest()" disabled>Stop</button>
+      <button id="resumeBtn" onclick="resumeTest()" disabled>Resume</button>
+    </div>
+
+    <div class="input-section">
+      <div id="dropZone" class="drop-zone">📂 Drag & Drop Wordlist Here</div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-buttons">
+        <span class="filter-label">Filter:</span>
+        <button class="filter-btn" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" onclick="setFilter('1')">1xx</button>
+        <button class="filter-btn" onclick="setFilter('2')">2xx</button>
+        <button class="filter-btn" onclick="setFilter('3')">3xx</button>
+        <button class="filter-btn" onclick="setFilter('4')">4xx</button>
+        <button class="filter-btn" onclick="setFilter('5')">5xx</button>
+        <button class="filter-btn" onclick="exportToExcel()">Export to Excel</button>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="totalPayloads">0</div>
+          <div class="stat-label">Total Payloads</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="processedPayloads">0</div>
+          <div class="stat-label">Processed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="remainingPayloads">0</div>
+          <div class="stat-label">Remaining</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="eta">--</div>
+          <div class="stat-label">ETA</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>URL</th><th>Status Code</th></tr>
+        </thead>
+        <tbody id="resultTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    let allResults = [];
+    let total = 0;
+    let processed = 0;
+    let startTime = 0;
+    let es = null;
+    let isPaused = false;
+    let lastPayloadIndex = 0;
+    let currentDomain = '';
+    let currentWordlist = '';
+    let activeFilter = 'all';
+
+    function setButtonStates({ run = false, stop = false, resume = false }) {
+      document.getElementById('runTestBtn').disabled = !run;
+      document.getElementById('stopBtn').disabled = !stop;
+      document.getElementById('resumeBtn').disabled = !resume;
+    }
+
+    async function runTest(resumeFrom = 0) {
+      currentDomain = document.getElementById('urlInput').value.trim();
+      let wordlist = document.getElementById('wordlistInput').value.trim();
+      if (!wordlist) wordlist = document.getElementById('wordlistSelect').value;
+      if (!currentDomain || !wordlist) return alert('Provide domain & wordlist');
+      currentWordlist = wordlist;
+
+      if (resumeFrom === 0) {
+        document.getElementById('resultTable').innerHTML = '';
+        allResults = [];
+        processed = 0;
+        startTime = Date.now();
+        lastPayloadIndex = 0;
+      }
+
+      setButtonStates({ run: false, stop: true, resume: false });
+
+      if (resumeFrom === 0) {
+        const countRes = await fetch(`http://localhost:9999/api/wordlist-count?path=${encodeURIComponent(wordlist)}`);
+        total = await countRes.json();
+      }
+
+      updateProgress();
+
+      const url = `http://localhost:9999/api/discovery-stream?domain=${encodeURIComponent(currentDomain)}&wordlistPath=${encodeURIComponent(wordlist)}&startIndex=${resumeFrom}`;
+      es = new EventSource(url);
+
+      es.onmessage = e => {
+        const data = JSON.parse(e.data);
+        appendResult(data);
+        lastPayloadIndex++;
+      };
+
+      es.addEventListener('done', () => {
+        updateProgress(true);
+        es.close();
+        setButtonStates({ run: true, stop: false, resume: false });
+      });
+
+      es.onerror = () => {
+        alert('Connection error.');
+        es.close();
+      };
+    }
+
+    function stopTest() {
+      if (es) {
+        es.close();
+        isPaused = true;
+        setButtonStates({ run: false, stop: false, resume: true });
+      }
+    }
+
+    function resumeTest() {
+      if (isPaused) {
+        isPaused = false;
+        runTest(lastPayloadIndex);
+        setButtonStates({ run: false, stop: true, resume: false });
+      }
+    }
+
+    function appendResult(item) {
+      allResults.push(item);
+      processed++;
+      updateProgress();
+
+      const tr = document.createElement('tr');
+      tr.className = `status-${item.status[0]}`;
+      tr.innerHTML = `
+        <td style="padding:10px; border:1px solid #ccc;">${escapeHtml(item.url)}</td>
+        <td style="padding:10px; border:1px solid #ccc;">${item.status}</td>
+      `;
+      if (activeFilter !== 'all' && !item.status.startsWith(activeFilter)) {
+        tr.style.display = 'none';
+      }
+      document.getElementById('resultTable').appendChild(tr);
+    }
+
+    function updateProgress(done = false) {
+      const remaining = total - processed;
+      const elapsed = (Date.now() - startTime) / 1000;
+      const rate = processed / elapsed;
+      const eta = rate ? Math.round(remaining / rate) : '--';
+
+      document.getElementById('totalPayloads').textContent = total;
+      document.getElementById('processedPayloads').textContent = processed;
+      document.getElementById('remainingPayloads').textContent = remaining;
+      document.getElementById('eta').textContent = done ? '✅ Done' : `${eta}s`;
+    }
+
+    function setFilter(prefix) {
+      activeFilter = prefix;
+      const rows = document.querySelectorAll('#resultTable tr');
+      rows.forEach(row => {
+        const status = row.children[1]?.textContent || '';
+        row.style.display = (prefix === 'all' || status.startsWith(prefix)) ? '' : 'none';
+      });
+    }
+
+    function exportToExcel() {
+      const ws = XLSX.utils.json_to_sheet(allResults);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Results');
+      XLSX.writeFile(wb, 'discovery-results.xlsx');
+    }
+
+    function escapeHtml(text) {
+      return text?.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+    }
+
+    // Load wordlist dropdown
+    fetch('http://localhost:9999/api/wordlists')
+      .then(res => res.json())
+      .then(files => {
+        const select = document.getElementById('wordlistSelect');
+        files.forEach(file => {
+          const opt = document.createElement('option');
+          opt.value = file;
+          opt.textContent = file;
+          select.appendChild(opt);
+        });
+      });
+
+    // Drag-and-drop support
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault(); dropZone.style.borderColor = '#000';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = '#aaa';
+    });
+    dropZone.addEventListener('drop', async e => {
+      e.preventDefault();
+      dropZone.style.borderColor = '#aaa';
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('wordlist', file);
+
+      const res = await fetch('http://localhost:9999/api/upload-wordlist', {
+        method: 'POST', body: formData
+      });
+      const savedPath = await res.text();
+      const select = document.getElementById('wordlistSelect');
+      const opt = document.createElement('option');
+      opt.value = savedPath;
+      opt.textContent = savedPath;
+      select.appendChild(opt);
+      select.value = savedPath;
+    });
+
+    // ✅ Set initial button state
+    window.addEventListener('DOMContentLoaded', () => {
+      setButtonStates({ run: true, stop: false, resume: false });
+    });
+  </script>
+</body>
+</html>

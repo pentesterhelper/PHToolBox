@@ -1,0 +1,62 @@
+[
+  {
+    "title": "WayBack URL",
+    "display": "WayBack URL",
+    "route": "wayBackUrl"
+  },
+    {
+    "title": "Google Dorks",
+    "display": "Google Dorks",
+    "route": "googleDork.html"
+  },
+{
+    "title": "Fuzzing Subdomain",
+    "display": "Fuzzing Subdomain",
+    "route": "checkSubdomainViaWordlist"
+  },
+  {
+    "title": "Subdomain Online",
+    "display": "Subdomain Online",
+    "route": "onlineSubdomain"
+  },
+   {
+    "title": "Static Web Checklist",
+    "display": "Static Web Checklist",
+    "route": "Checklist/StaticWeb"
+  },
+ {
+    "title": "Fuzz Discovery Content",
+    "display": "Fuzz Discovery Content",
+    "route": "checkDiscoveryContent"
+  },
+   {
+    "title": "JS Obfusticate Decode",
+    "display": "JS Obfusticate Decode",
+    "route": "jsDeobfusticate"
+  },
+  {
+    "title": "Domain To IP",
+    "display": "Domain To IP",
+    "route": "domainToIP"
+  },
+  {
+    "title": "Server Header",
+    "display": "Server Header",
+    "route": "checkServerHeader"
+  },
+  {
+    "title": "Check Weak SSL",
+    "display": "Check Weak SSL",
+    "route": "checkWeakSSL"
+  },
+  {
+    "title": "Check Clickjacking",
+    "display": "Check Clickjacking",
+    "route": "clickJacking"
+  },
+  {
+    "title": "Missing Security Header",
+    "display": "Missing Security Header",
+    "route": "missingSecurityHeader"
+  }
+]

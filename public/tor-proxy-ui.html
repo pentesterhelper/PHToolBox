@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tor Proxy Control</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff; color: #000; line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+    .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #e5e5e5; padding-bottom: 20px; }
+    .header h1 { font-size: 2rem; color: #000; margin-bottom: 10px; }
+    .header p { color: #666; font-size: 1.1rem; }
+    .input-section {
+      display: flex; justify-content: center; align-items: center; gap: 15px;
+      margin-bottom: 40px; flex-wrap: wrap;
+    }
+    button {
+      padding: 12px 24px; font-size: 16px; background: #000; color: #fff;
+      border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease;
+      font-weight: 500;
+    }
+    button:hover { background: #333; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .section {
+      background: #fff; border: 1px solid #f0f0f0; border-radius: 6px;
+      padding: 16px; flex: 1 1 300px; margin-bottom: 20px;
+    }
+    .status-success { color: #2e7d32; font-weight: 600; }
+    .status-error { color: #c62828; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧅 Tor Proxy Control Panel</h1>
+      <p>Manage Tor Proxy, Rotate IP & System Proxy</p>
+    </div>
+
+    <div class="input-section">
+      <button id="startBtn" onclick="startTor()">🚀 Start Tor</button>
+      <button id="stopBtn" onclick="stopTor()" disabled>🛑 Stop Tor</button>
+      <button id="rotateBtn" onclick="rotateIP()" disabled>🔄 Rotate IP</button>
+    </div>
+
+    <div class="input-section">
+      <button id="enableBtn" onclick="setSystemProxy()" disabled>✅ Enable Proxy</button>
+      <button id="disableBtn" onclick="unsetSystemProxy()" disabled>❌ Disable Proxy</button>
+    </div>
+
+  <!--   <div id="ip" class="section">🔄 Waiting for Tor IP...</div> -->
+    <div id="proxy-status" class="section">🔄 Checking Proxy Status...</div>
+  </div>
+
+<script>
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const rotateBtn = document.getElementById('rotateBtn');
+  const enableBtn = document.getElementById('enableBtn');
+  const disableBtn = document.getElementById('disableBtn');
+
+  function setButtons(state) {
+    stopBtn.disabled = !state;
+    rotateBtn.disabled = !state;
+    enableBtn.disabled = !state;
+    disableBtn.disabled = !state;
+  }
+
+  function disableAllButtons() {
+    [startBtn, stopBtn, rotateBtn, enableBtn, disableBtn].forEach(btn => btn.disabled = true);
+  }
+
+  async function startTor() {
+    startBtn.disabled = true;
+    startBtn.innerText = '⏳ Starting...';
+    const res = await fetch('/start-tor');
+    alert(await res.text());
+    setTimeout(() => {
+      setButtons(true);
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      startBtn.innerText = '🚀 Start Tor';
+      // getIP();
+      updateProxyStatus();
+    }, 8000);
+  }
+
+  async function stopTor() {
+    disableAllButtons();
+    const res = await fetch('/stop-tor');
+    alert(await res.text());
+    setButtons(false);
+    startBtn.disabled = false;
+    document.getElementById('ip').innerText = '🔴 Tor stopped';
+    updateProxyStatus();
+  }
+
+  async function rotateIP() {
+    document.getElementById('ip').innerText = '⏳ Rotating...';
+    await fetch('/tor-rotate', { method: 'POST' });
+    // setTimeout(getIP, 6000);
+  }
+
+  // async function getIP() {
+  //   try {
+  //     const res = await fetch('/tor-ip');
+  //     const data = await res.json();
+  //     document.getElementById('ip').innerText = 'Current Tor IP: ' + data.ip;
+  //   } catch {
+  //     document.getElementById('ip').innerText = '❌ Failed to load Tor IP';
+  //   }
+  // }
+
+  async function updateProxyStatus() {
+    try {
+      const res = await fetch('/proxy-status');
+      const data = await res.json();
+      const statusDiv = document.getElementById('proxy-status');
+      if (data.enabled) {
+        statusDiv.innerHTML = '🟢 <b>System Proxy: ON</b>';
+        statusDiv.className = 'section status-success';
+      } else {
+        statusDiv.innerHTML = '🔴 <b>System Proxy: OFF</b>';
+        statusDiv.className = 'section status-error';
+      }
+    } catch {
+      document.getElementById('proxy-status').innerText = '❌ Failed to get proxy status';
+    }
+  }
+
+  async function setSystemProxy() {
+    enableBtn.disabled = true;
+    disableBtn.disabled = true;
+    enableBtn.innerText = '⏳ Enabling...';
+    const res = await fetch('/set-system-proxy');
+    alert(await res.text());
+    enableBtn.innerText = '✅ Enable Proxy';
+    enableBtn.disabled = false;
+    disableBtn.disabled = false;
+    updateProxyStatus();
+  }
+
+  async function unsetSystemProxy() {
+    enableBtn.disabled = true;
+    disableBtn.disabled = true;
+    disableBtn.innerText = '⏳ Disabling...';
+    const res = await fetch('/unset-system-proxy');
+    alert(await res.text());
+    disableBtn.innerText = '❌ Disable Proxy';
+    enableBtn.disabled = false;
+    disableBtn.disabled = false;
+    updateProxyStatus();
+  }
+
+  // Run on load
+  // getIP();
+  updateProxyStatus();
+</script>
+
+</body>
+</html>

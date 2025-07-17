@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Header Checker</title>
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .container { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 60px 20px; 
+    }
+    
+    .header { 
+      text-align: center; 
+      margin-bottom: 50px; 
+      border-bottom: 1px solid #e0e0e0; 
+      padding-bottom: 30px; 
+    }
+    
+    .header h1 { 
+      font-size: 2.5rem; 
+      color: #1a1a1a; 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    
+    .header p { 
+      color: #666666; 
+      font-size: 1.2rem; 
+      font-weight: 400;
+    }
+    
+    .input-section {
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      gap: 16px;
+      margin-bottom: 50px; 
+      flex-wrap: wrap;
+    }
+    
+    .input-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+    }
+    
+    input[type="text"] {
+      padding: 16px 20px; 
+      font-size: 16px; 
+      border: 2px solid #e0e0e0;
+      border-radius: 8px; 
+      background: #ffffff; 
+      color: #1a1a1a; 
+      width: 450px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    input[type="text"]:focus { 
+      outline: none; 
+      border-color: #2563eb; 
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    button {
+      padding: 16px 32px; 
+      font-size: 16px; 
+      background: #1a1a1a; 
+      color: #ffffff;
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      font-weight: 600;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    button:hover { 
+      background: #333333; 
+      transform: translateY(-1px);
+    }
+    
+    button:disabled { 
+      background: #cccccc; 
+      cursor: not-allowed; 
+      transform: none;
+    }
+    
+    .result { 
+      margin-top: 50px; 
+    }
+    
+    .loading { 
+      text-align: center; 
+      padding: 60px; 
+      color: #666666; 
+      font-size: 1.2rem; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f0f0f0;
+      border-top: 4px solid #1a1a1a;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error {
+      background: #fef2f2; 
+      color: #dc2626; 
+      padding: 20px;
+      border-radius: 8px; 
+      border-left: 4px solid #dc2626; 
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    
+    .card {
+      background: #ffffff; 
+      border: 1px solid #e0e0e0; 
+      border-radius: 12px;
+      margin-bottom: 24px; 
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.2s ease;
+    }
+    
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header { 
+      background: #f8f9fa; 
+      padding: 20px 24px; 
+      border-bottom: 1px solid #e0e0e0; 
+    }
+    
+    .card-header h3 { 
+      color: #1a1a1a; 
+      font-size: 1.3rem; 
+      margin: 0; 
+      font-weight: 600;
+    }
+    
+    .card-body { 
+      display: flex; 
+      gap: 24px; 
+      padding: 24px; 
+      flex-wrap: wrap; 
+    }
+    
+    .section {
+      background: #ffffff; 
+      border: 1px solid #f0f0f0; 
+      border-radius: 8px;
+      padding: 20px; 
+      flex: 1 1 300px;
+    }
+    
+    .section h4 {
+      color: #1a1a1a; 
+      margin-bottom: 16px; 
+      font-size: 1.1rem;
+      border-bottom: 2px solid #e0e0e0; 
+      padding-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .field-label {
+      font-weight: 600; 
+      color: #1a1a1a; 
+      margin-bottom: 8px; 
+      display: block;
+    }
+    
+    .field-value {
+      background: #f8f9fa; 
+      border: 1px solid #e0e0e0; 
+      border-radius: 6px;
+      padding: 16px; 
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; 
+      font-size: 14px;
+      color: #1a1a1a; 
+    /*  white-space: pre-wrap; */
+      word-break: break-word;
+      overflow-y: auto; 
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    
+    .key-value-pair { 
+      margin-bottom: 6px; 
+    }
+    
+    .key-value-pair .key { 
+      font-weight: 600; 
+      color: #2563eb; 
+    }
+    
+    .key-value-pair .value { 
+      color: #1a1a1a; 
+      font-weight: 400; 
+    }
+    
+    .status-success { 
+      color: #059669; 
+      font-weight: 600; 
+    }
+    
+    .status-error { 
+      color: #dc2626; 
+      font-weight: 600; 
+    }
+    
+    .status-warning { 
+      color: #d97706; 
+      font-weight: 600; 
+    }
+    
+    .missing-header {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #fef2f2;
+      border-left: 3px solid #dc2626;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .missing-header strong {
+      color: #dc2626;
+    }
+    
+    @media (max-width: 768px) {
+      .input-section { 
+        flex-direction: column; 
+        gap: 16px;
+      }
+      
+      input[type="text"] { 
+        width: 100%; 
+        max-width: 400px;
+      }
+      
+      .card-body { 
+        flex-direction: column; 
+        gap: 20px;
+      }
+      
+      .header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Security Header Checker</h1>
+      <p>Analyze missing security headers for any website</p>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input id="urlInput" type="text" placeholder="Enter URL (e.g. https://example.com)" />
+        <button onclick="runTest()" id="testButton">
+          <span id="buttonText">Run Test</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+async function runTest() {
+  const url = document.getElementById('urlInput').value;
+  if (!url) return showError('Please enter a URL');
+  
+  const button = document.getElementById('testButton');
+  const buttonText = document.getElementById('buttonText');
+  
+  // Disable button and show loading state
+  button.disabled = true;
+  buttonText.textContent = 'Testing...';
+  
+  showLoading();
+  
+  try {
+    const response = await fetch('http://localhost:9999/API/checkSecurityHeaders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      if (data.error) {
+        showError(`Server error: ${data.error}`);
+      } else {
+        showError('Unexpected response from server');
+      }
+      return;
+    }
+
+    renderResults(data);
+
+  } catch (err) {
+    showError(`Connection error: ${err.message}`);
+  } finally {
+    // Re-enable button
+    button.disabled = false;
+    buttonText.textContent = 'Run Test';
+  }
+}
+
+function showLoading() {
+  document.getElementById('result').innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>Analyzing security headers...</div>
+    </div>
+  `;
+}
+
+function showError(message) {
+  document.getElementById('result').innerHTML = `
+    <div class="error">
+      <strong>Error:</strong> ${escapeHtml(message)}
+    </div>
+  `;
+}
+
+function formatKeyValue(obj) {
+  if (!obj || typeof obj !== 'object') return 'None';
+  return Object.entries(obj)
+    .map(([key, value]) => `<div class="key-value-pair"><span class="key">${escapeHtml(key)}:</span> <span class="value">${escapeHtml(value)}</span></div>`)
+    .join('');
+}
+
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') return unsafe;
+  return unsafe.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#039;');
+}
+
+function getStatusClass(status) {
+  if (status >= 200 && status < 300) return 'status-success';
+  if (status >= 400) return 'status-error';
+  return 'status-warning';
+}
+
+function renderResults(results) {
+  if (!results || results.length === 0) return showError('No results received from the test.');
+  
+  let html = '';
+  results.forEach(item => {
+    const statusClass = item.error ? 'status-error' : getStatusClass(item.response?.status);
+    html += `
+      <div class="card">
+        <div class="card-header">
+          <h3>${escapeHtml(item.method)} Method Test</h3>
+        </div>
+        <div class="card-body">
+          <div class="section">
+            <h4>Response Details</h4>
+            ${item.error ? `
+              <div class="error"><strong>Error:</strong> ${escapeHtml(item.error)}</div>
+            ` : `
+              <div class="field-value">${escapeHtml(item.method)} ${escapeHtml(item.url)}
+${formatKeyValue(item.response.headers)}
+              </div>
+            `}
+          </div>
+
+          <div class="section">
+            <h4>Missing Security Headers</h4>
+            <div class="field-value">
+              ${Array.isArray(item.missingHeaders) && item.missingHeaders.length > 0
+                ? item.missingHeaders.map(h => `
+                    <div class="missing-header">
+                      <strong>${escapeHtml(h.header)}:</strong> ${escapeHtml(h.description)}
+                    </div>
+                  `).join('')
+                : '<div style="color: #059669; font-weight: 600;">All security headers are properly configured! ✓</div>'
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  document.getElementById('result').innerHTML = html;
+}
+
+document.getElementById('urlInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') runTest();
+});
+</script>
+
+</body>
+</html>

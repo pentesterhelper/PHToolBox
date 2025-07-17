@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subdomain Finder - Waybackurl & VirusTotal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
+      color: #000000;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      color: #000000;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: #555555;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .input-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input[type="text"], select {
+      padding: 14px 18px;
+      font-size: 16px;
+      border: 2px solid #d0d0d0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #000000;
+      transition: all 0.3s ease;
+      width: 300px;
+      font-weight: 400;
+    }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 16px;
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    button:hover {
+      background: #333333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .drop-zone {
+      border: 2px dashed #d0d0d0;
+      padding: 40px;
+      text-align: center;
+      border-radius: 12px;
+      background: #f8f9fa;
+      font-size: 16px;
+      width: 100%;
+      transition: all 0.3s ease;
+      color: #555555;
+      font-weight: 500;
+    }
+    .drop-zone:hover {
+      border-color: #2563eb;
+      background: #f0f7ff;
+    }
+    .drop-zone.dragover {
+      border-color: #000000;
+      background: #f0f7ff;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      background: #f8f9fa;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h3 {
+      color: #000000;
+      font-size: 1.3rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .scanning-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666666;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .status-2 td {
+      background-color: #f0f9ff;
+      border-left: 4px solid #10b981;
+    }
+    .status-3 td {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+    }
+    .status-4 td {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+    }
+    .status-5 td {
+      background-color: #faf5ff;
+      border-left: 4px solid #8b5cf6;
+    }
+
+    .stats-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-item {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666666;
+      font-weight: 500;
+    }
+
+    .filter-section {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 20px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-weight: 600;
+      color: #000000;
+      margin-right: 10px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #f3f4f6;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .filter-btn:hover {
+      background: #e5e7eb;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .filter-btn.active {
+      background: #000000;
+      color: #ffffff;
+      border-color: #000000;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #666666;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .button-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ffffff40;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 1024px) {
+      input[type="text"], select {
+        width: 100%;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .input-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-buttons {
+        justify-content: center;
+      }
+      .header h1 {
+        font-size: 2rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Custom scrollbar */
+    .table-container {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+    .subdomain-list {
+  list-style: none;
+  padding-left: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  border-radius: 8px;
+  background: #fafafa;
+  font-family: monospace;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Online Subdomain Finder</h1>
+      <p>Uncover subdomains with enterprise-level accuracy using VirusTotal and WaybackURLs APIs.</p>
+      <p>Note: Add your VirusTotal API key in <code>keys.js</code> to enable this feature.</p>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <label class="input-label" for="domainInput">Enter Target Domain:</label>
+        <input type="text" id="domainInput" placeholder="example.com" />
+        <button onclick="findSubdomains()" id="findBtn">Find Subdomains</button>
+      </div>
+    </div>
+
+    <div class="card" id="subdomainResult" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    async function findSubdomains() {
+      const domain = document.getElementById('domainInput').value.trim();
+      const resultBox = document.getElementById('subdomainResult');
+      const button = document.getElementById('findBtn');
+
+      if (!domain) return showError('Please enter a valid domain name');
+
+      resultBox.innerHTML = `<div class="card-header"><span class="spinner"></span> Analyzing domain and fetching subdomains...</div>`;
+      button.disabled = true;
+      button.innerHTML = '<span class="button-spinner"></span> Searching...';
+
+      try {
+        const res = await fetch(`http://localhost:9999/api/subdomains-online?domain=${encodeURIComponent(domain)}`);
+        const data = await res.json();
+
+        if (data.error) return showError(data.error);
+        renderSubdomainResult(data);
+      } catch (err) {
+        showError('Connection failed: ' + err.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Find Subdomains';
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('subdomainResult').innerHTML = `
+        <div class="card-header" style="color:#b91c1c;"><strong>❌ Error:</strong> ${escapeHtml(msg)}</div>
+      `;
+    }
+
+    function renderSubdomainResult(data) {
+      const resultBox = document.getElementById('subdomainResult');
+      resultBox.innerHTML = `
+        <div class="card-header">
+          <h3>Subdomain Scan Results</h3>
+        </div>
+        <div class="subdomain-section">
+          <h3>VirusTotal <span class="subdomain-count">(${data.virustotal.length} found)</span></h3>
+          <ul class="subdomain-list">
+            ${data.virustotal.map(d => `<li class="virustotal-item">${escapeHtml(d)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="subdomain-section">
+          <h3>WaybackURLs <span class="subdomain-count">(${data.waybackurls.length} found)</span></h3>
+          <ul class="subdomain-list">
+            ${data.waybackurls.map(d => `<li class="wayback-item">${escapeHtml(d)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="subdomain-section">
+          <h3>Merged & Unique <span class="subdomain-count">(${data.merged.length} total)</span></h3>
+          <ul class="subdomain-list">
+            ${data.merged.map(d => `<li class="merged-item">${escapeHtml(d)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    function escapeHtml(unsafe) {
+      return unsafe.replace(/&/g, "&amp;")
+                   .replace(/</g, "&lt;")
+                   .replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;")
+                   .replace(/'/g, "&#039;");
+    }
+
+    // Enter key = submit
+    document.getElementById('domainInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        findSubdomains();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "static_web_application_checkList": [
+    { "name": "Missing Security Header", "status": false },
+    { "name": "HSTS", "status": false },
+    { "name": "Clickjacking (X-Frame-Options not set)", "status": false },
+    { "name": "Reflected Cross-Site Scripting (XSS)", "status": false },
+    { "name": "Host Header Injection", "status": false },
+    { "name": "Verb Tampering", "status": false },
+    { "name": "Weak SSL/TLS Config", "status": false },
+    { "name": "Hardcoded Key", "status": false },
+    { "name": "Platform/Server Name Disclosed", "status": false },
+    { "name": "Platform/Server Version Disclosed", "status": false },
+    { "name": "Vulnerable/Outdated Server/Platform Version", "status": false },
+    { "name": "Vulnerable/Outdated JS Version", "status": false }
+  ]
+}

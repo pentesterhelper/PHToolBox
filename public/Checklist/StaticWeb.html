@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Web App Security Checklist</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
+      color: #000000;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      color: #000000;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: #555555;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .input-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input[type="text"], select {
+      padding: 14px 18px;
+      font-size: 16px;
+      border: 2px solid #d0d0d0;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #000000;
+      transition: all 0.3s ease;
+      width: 300px;
+      font-weight: 400;
+    }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 16px;
+      background: #000000;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    button:hover {
+      background: #333333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .drop-zone {
+      border: 2px dashed #d0d0d0;
+      padding: 40px;
+      text-align: center;
+      border-radius: 12px;
+      background: #f8f9fa;
+      font-size: 16px;
+      width: 100%;
+      transition: all 0.3s ease;
+      color: #555555;
+      font-weight: 500;
+    }
+    .drop-zone:hover {
+      border-color: #2563eb;
+      background: #f0f7ff;
+    }
+    .drop-zone.dragover {
+      border-color: #000000;
+      background: #f0f7ff;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      background: #f8f9fa;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h3 {
+      color: #000000;
+      font-size: 1.3rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .scanning-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666666;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .status-2 td {
+      background-color: #f0f9ff;
+      border-left: 4px solid #10b981;
+    }
+    .status-3 td {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+    }
+    .status-4 td {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+    }
+    .status-5 td {
+      background-color: #faf5ff;
+      border-left: 4px solid #8b5cf6;
+    }
+
+    .stats-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-item {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666666;
+      font-weight: 500;
+    }
+
+    .filter-section {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 20px;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-weight: 600;
+      color: #000000;
+      margin-right: 10px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #f3f4f6;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .filter-btn:hover {
+      background: #e5e7eb;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .filter-btn.active {
+      background: #000000;
+      color: #ffffff;
+      border-color: #000000;
+    }
+
+    /* Spinner Styles */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #666666;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .button-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ffffff40;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 1024px) {
+      input[type="text"], select {
+        width: 100%;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .input-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-buttons {
+        justify-content: center;
+      }
+      .header h1 {
+        font-size: 2rem;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Custom scrollbar */
+    .table-container {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Static Web App Security Checklist</h1>
+      <p><strong>Note:</strong> You can add vulnerabilities to the checklist by editing <code>static_web_application_checklist.json</code>. Refresh the tab to see updates — but don't close the tab/browser, as your selections are stored in session memory.</p>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <button onclick="setAllCheckboxes('check-toggle', true)">✅ Check All</button>
+        <button onclick="setAllCheckboxes('check-toggle', false)">❌ Clear Check</button>
+        <button onclick="setAllCheckboxes('found-toggle', true)">✅ Found All</button>
+        <button onclick="setAllCheckboxes('found-toggle', false)">❌ Clear Found</button>
+        <button class="export-btn" onclick="exportToExcel()">📥 Create Excel</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>🛡️ Checklist</h3>
+        <div class="scanning-status"><span class="spinner"></span> Loading...</div>
+      </div>
+      <div class="table-container">
+        <table id="checklistTable">
+          <thead>
+            <tr>
+              <th>Check</th>
+              <th>Checklist Item</th>
+              <th>Found</th>
+            </tr>
+          </thead>
+          <tbody id="checklistBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let checklistData = [];
+
+    const savedChecks = JSON.parse(sessionStorage.getItem('checkStates') || '{}');
+    const savedFound = JSON.parse(sessionStorage.getItem('foundStates') || '{}');
+
+    async function loadChecklist() {
+      try {
+        const res = await fetch('http://localhost:9999/api/getStaticWebChecklist');
+        const items = await res.json();
+        checklistData = items;
+        renderChecklist(items);
+        document.querySelector('.scanning-status').innerHTML = '✔️ Loaded';
+      } catch (err) {
+        alert('Failed to load checklist: ' + err.message);
+        document.querySelector('.scanning-status').innerHTML = '❌ Failed';
+      }
+    }
+
+    function renderChecklist(items) {
+      const tbody = document.getElementById('checklistBody');
+      tbody.innerHTML = '';
+
+      items.forEach((item, i) => {
+        const row = document.createElement('tr');
+        const isChecked = savedChecks[i] || false;
+        const isFound = savedFound[i] ?? item.status;
+
+        row.innerHTML = `
+          <td><input type="checkbox" class="check-toggle" id="check_${i}" ${isChecked ? 'checked' : ''}></td>
+          <td>${item.name}</td>
+          <td><input type="checkbox" class="found-toggle" id="found_${i}" ${isFound ? 'checked' : ''}></td>
+        `;
+
+        tbody.appendChild(row);
+      });
+
+      setCheckboxListeners();
+    }
+
+    function setCheckboxListeners() {
+      document.querySelectorAll('.check-toggle').forEach((box, i) => {
+        box.addEventListener('change', () => {
+          savedChecks[i] = box.checked;
+          sessionStorage.setItem('checkStates', JSON.stringify(savedChecks));
+        });
+      });
+
+      document.querySelectorAll('.found-toggle').forEach((box, i) => {
+        box.addEventListener('change', () => {
+          savedFound[i] = box.checked;
+          sessionStorage.setItem('foundStates', JSON.stringify(savedFound));
+        });
+      });
+    }
+
+    function setAllCheckboxes(className, value) {
+      document.querySelectorAll(`.${className}`).forEach((box, i) => {
+        box.checked = value;
+        if (className === 'check-toggle') savedChecks[i] = value;
+        if (className === 'found-toggle') savedFound[i] = value;
+      });
+
+      sessionStorage.setItem('checkStates', JSON.stringify(savedChecks));
+      sessionStorage.setItem('foundStates', JSON.stringify(savedFound));
+    }
+
+    function exportToExcel() {
+      const rows = [["Checklist Item", "Found"]];
+      const checkboxes = document.querySelectorAll('.check-toggle');
+
+      checkboxes.forEach((chk, i) => {
+        if (chk.checked) {
+          const item = checklistData[i];
+          const foundBox = document.getElementById(`found_${i}`);
+          const foundText = foundBox.checked ? "✅ Yes" : "❌ No";
+          rows.push([item.name, foundText]);
+        }
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+
+      const border = { top: {style:"thin"}, bottom: {style:"thin"}, left: {style:"thin"}, right: {style:"thin"} };
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const cellAddr = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws[cellAddr]) continue;
+          if (!ws[cellAddr].s) ws[cellAddr].s = {};
+          ws[cellAddr].s.border = border;
+          if (R === 0) ws[cellAddr].s.font = { bold: true };
+        }
+      }
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Checklist");
+      XLSX.writeFile(wb, "WebApp_Security_Checklist.xlsx");
+    }
+
+    window.onload = loadChecklist;
+  </script>
+</body>
+</html>

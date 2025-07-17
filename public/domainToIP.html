@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domain to IP Resolver</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      color: #000;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #e5e5e5;
+      padding-bottom: 15px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      color: #000;
+    }
+
+    .input-section {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
+    }
+
+    input[type="text"] {
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 2px solid #e5e5e5;
+      border-radius: 8px;
+      background: #fff;
+      color: #000;
+      width: 300px;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4a90e2;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    .loading, .error {
+      text-align: center;
+      padding: 20px;
+      font-size: 16px;
+    }
+
+    .error {
+      background: #ffe6e6;
+      border-left: 5px solid #e60000;
+      border-radius: 6px;
+      color: #b30000;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+      background: #f8f9fa;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #000;
+    }
+
+    .card-body {
+      padding: 16px 20px;
+    }
+
+    .field-value {
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    @media (max-width: 600px) {
+      input[type="text"] {
+        width: 100%;
+      }
+
+      .input-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Domain to IP Resolver</h1>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input id="urlInput" type="text" placeholder="example.com, xyz.com" />
+        <button onclick="runTest()">Resolve</button>
+      </div>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+async function runTest() {
+  const input = document.getElementById('urlInput').value.trim();
+  if (!input) return showError('Please enter at least one domain or URL');
+
+  const domains = input
+    .split(',')
+    .map(d => d.trim())
+    .filter(Boolean)
+    .map(cleanDomain);
+
+  if (domains.length === 0) return showError('No valid domain found');
+
+  showLoading();
+
+  const results = [];
+  for (const domain of domains) {
+    try {
+      const res = await fetch(`http://localhost:9999/getDomainIP?domain=${encodeURIComponent(domain)}`);
+      const data = await res.json();
+      results.push({ domain, ...data });
+    } catch (err) {
+      results.push({ domain, error: `Connection error: ${err.message}` });
+    }
+  }
+
+  renderResults(results);
+}
+
+function cleanDomain(raw) {
+  try {
+    return new URL(raw).hostname;
+  } catch {
+    return raw.replace(/^https?:\/\//, '').split('/')[0];
+  }
+}
+
+function showLoading() {
+  document.getElementById('result').innerHTML = `<div class="loading">🔍 Resolving domains...</div>`;
+}
+
+function showError(message) {
+  document.getElementById('result').innerHTML = `<div class="error"><strong>Error:</strong> ${escapeHtml(message)}</div>`;
+}
+
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') return unsafe;
+  return unsafe.replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#039;');
+}
+
+function renderResults(results) {
+  if (!results || results.length === 0) return showError('No results received.');
+  let html = '';
+  results.forEach(item => {
+    html += `
+      <div class="card">
+        <div class="card-header">
+          <h3>${escapeHtml(item.domain)}</h3>
+        </div>
+        <div class="card-body">
+          ${item.error ? `
+            <div class="error"><strong>Error:</strong> ${escapeHtml(item.error)}</div>
+          ` : `
+            <div class="section">
+              <div class="field-value"><strong>IP Address:</strong> ${escapeHtml(item.ip)}</div>
+              <div class="field-value"><strong>Family:</strong> ${escapeHtml(item.family)}</div>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('result').innerHTML = html;
+}
+
+document.getElementById('urlInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') runTest();
+});
+</script>
+</body>
+</html>

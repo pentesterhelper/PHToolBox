@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PH Toolbox</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>PH Toolbox</h1>
+    <p>Quick security checks for your application`s</p>
+  </div>
+
+  <!-- 🔍 Search Input -->
+  <div class="input-section">
+    <div class="input-group">
+      <input id="searchInput" type="text" placeholder="Search tools..." onkeyup="filterCards()" />
+    </div>
+  </div>
+
+  <!-- 🔐 Cards Grid -->
+  <div id="cardContainer" class="card-grid"></div>
+</div>
+
+<script>
+// Dynamically load tools from JSON
+let toolsData = [];
+
+fetch('tools.json')
+  .then(res => res.json())
+  .then(data => {
+    toolsData = data;
+    renderCards(data);
+  });
+
+function renderCards(tools) {
+  const container = document.getElementById('cardContainer');
+  container.innerHTML = '';
+
+  tools.forEach(tool => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.setAttribute('data-title', tool.title.toLowerCase());
+    card.onclick = () => window.location.href = `http://localhost:9999/${tool.route}`;
+
+    const header = document.createElement('div');
+    header.className = 'card-header';
+    header.innerHTML = `<h3>${tool.display}</h3>`;
+
+    card.appendChild(header);
+    container.appendChild(card);
+  });
+}
+
+// 🔍 Filter function
+function filterCards() {
+  const input = document.getElementById('searchInput').value.toLowerCase();
+  const cards = document.querySelectorAll('.card');
+
+  cards.forEach(card => {
+    const title = card.getAttribute('data-title');
+    card.style.display = title.includes(input) ? 'block' : 'none';
+  });
+}
+</script>
+</body>
+</html>
