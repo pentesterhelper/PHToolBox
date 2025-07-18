@@ -162,8 +162,3 @@ Website: [https://pentesterhelper.in](https://pentesterhelper.in)
 If you like this project, give it a ⭐ on GitHub!
 
 ```
-
----
-
-Let me know if you want me to auto-generate a `requirements.txt` for any Python parts or add badges, CI config, or license section.
-```
